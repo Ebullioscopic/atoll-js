@@ -1,0 +1,41 @@
+{
+  "name": "@ebullioscopic/atoll-js",
+  "version": "1.0.0",
+  "description": "JavaScript/TypeScript SDK for interacting with Atoll via JSON-RPC over WebSocket",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "atoll",
+    "dynamic-island",
+    "macos",
+    "notch",
+    "live-activities",
+    "lock-screen",
+    "widgets",
+    "jsonrpc",
+    "websocket"
+  ],
+  "author": "Ebullioscopic",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ]
+}
