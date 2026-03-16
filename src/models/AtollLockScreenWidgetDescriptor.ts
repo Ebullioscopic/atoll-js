@@ -13,8 +13,8 @@ export type AtollWidgetClampMode = 'safeRegion' | 'relaxed' | 'unconstrained';
 export interface AtollWidgetPosition {
   alignment: AtollWidgetAlignment;
   verticalOffset: number;
-  horizontalOffset: number;
-  clampMode: AtollWidgetClampMode;
+  horizontalOffset?: number;
+  clampMode?: AtollWidgetClampMode;
 }
 
 export type AtollWidgetMaterial = 'frosted' | 'liquid' | 'solid' | 'semiTransparent' | 'clear';
@@ -86,15 +86,15 @@ export interface AtollLockScreenWidgetDescriptor {
   bundleIdentifier: string;
   layoutStyle: AtollWidgetLayoutStyle;
   position: AtollWidgetPosition;
-  size: { width: number; height: number };
+  size?: { width: number; height: number };
   material: AtollWidgetMaterial;
   appearance?: AtollWidgetAppearanceOptions;
-  cornerRadius: number;
+  cornerRadius?: number;
   content: AtollWidgetContentElement[];
   accentColor: AtollColorDescriptor;
   dismissOnUnlock: boolean;
   priority: AtollLiveActivityPriority;
-  metadata: Record<string, string>;
+  metadata?: Record<string, string>;
 }
 
 // ─── Builder ────────────────────────────────────────────────────────

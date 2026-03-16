@@ -18,8 +18,8 @@ export type AtollFontDesign = 'default' | 'serif' | 'rounded' | 'monospaced';
 export interface AtollFontDescriptor {
   size: number;
   weight: AtollFontWeight;
-  design: AtollFontDesign;
-  isMonospacedDigit: boolean;
+  design?: AtollFontDesign;
+  isMonospacedDigit?: boolean;
 }
 
 export function systemFont(

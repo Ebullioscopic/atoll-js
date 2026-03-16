@@ -53,7 +53,7 @@ export interface AtollNotchExperienceDescriptor {
   bundleIdentifier: string;
   priority: AtollLiveActivityPriority;
   accentColor: AtollColorDescriptor;
-  metadata: Record<string, string>;
+  metadata?: Record<string, string>;
   tab?: AtollNotchTabConfiguration;
   minimalistic?: AtollNotchMinimalisticConfiguration;
   durationHint?: number;

@@ -1,9 +1,10 @@
 /**
  * AtollLiveActivityPriority — Priority levels for live activities.
+ * Values must match Swift's `AtollLiveActivityPriority: String, Codable` enum.
  */
 export enum AtollLiveActivityPriority {
-  Low = 0,
-  Normal = 1,
-  High = 2,
-  Critical = 3,
+  Low = 'low',
+  Normal = 'normal',
+  High = 'high',
+  Critical = 'critical',
 }

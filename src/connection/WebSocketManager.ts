@@ -25,6 +25,9 @@ export class WebSocketManager {
   private shouldReconnect = true;
   private _isConnected = false;
 
+  /** Enable debug logging of JSON-RPC messages to console. */
+  public debug = false;
+
   public onNotification?: (method: string, params?: Record<string, unknown>) => void;
   public onDisconnect?: () => void;
   public onConnect?: () => void;
@@ -106,6 +109,10 @@ export class WebSocketManager {
     const request = createRequest(method, params);
     const data = JSON.stringify(request);
 
+    if (this.debug) {
+      console.log(`[atoll-js] → ${method}`, JSON.stringify(params).substring(0, 500));
+    }
+
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pendingRequests.delete(request.id);
@@ -137,6 +144,9 @@ export class WebSocketManager {
         clearTimeout(pending.timer);
         this.pendingRequests.delete(parsed.id);
         pending.resolve(parsed as JSONRPCResponse);
+        if (this.debug) {
+          console.log(`[atoll-js] ←`, JSON.stringify(parsed).substring(0, 500));
+        }
         return;
       }
 
