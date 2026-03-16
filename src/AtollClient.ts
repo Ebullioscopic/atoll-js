@@ -4,6 +4,7 @@ import { AtollError, AtollErrorCode } from './errors/AtollError';
 import { AtollLiveActivityDescriptor } from './models/AtollLiveActivityDescriptor';
 import { AtollLockScreenWidgetDescriptor } from './models/AtollLockScreenWidgetDescriptor';
 import { AtollNotchExperienceDescriptor } from './models/AtollNotchExperienceDescriptor';
+import { normalizeRPCPayload } from './connection/RPCPayloadNormalizer';
 
 export interface AtollClientOptions {
   host?: string;
@@ -113,18 +114,12 @@ export class AtollClient extends EventEmitter {
 
   /** Present a live activity in Atoll's Dynamic Island. */
   async presentLiveActivity(descriptor: AtollLiveActivityDescriptor): Promise<void> {
-    await this.ensureConnected();
-    const d = this.fillBundleId(descriptor);
-    const response = await this.ws.sendRequest('atoll.presentLiveActivity', { descriptor: d });
-    this.checkError(response);
+    await this.sendDescriptor('atoll.presentLiveActivity', descriptor);
   }
 
   /** Update an existing live activity. */
   async updateLiveActivity(descriptor: AtollLiveActivityDescriptor): Promise<void> {
-    await this.ensureConnected();
-    const d = this.fillBundleId(descriptor);
-    const response = await this.ws.sendRequest('atoll.updateLiveActivity', { descriptor: d });
-    this.checkError(response);
+    await this.sendDescriptor('atoll.updateLiveActivity', descriptor);
   }
 
   /** Dismiss a live activity by ID. */
@@ -141,18 +136,12 @@ export class AtollClient extends EventEmitter {
 
   /** Present a lock screen widget. */
   async presentLockScreenWidget(descriptor: AtollLockScreenWidgetDescriptor): Promise<void> {
-    await this.ensureConnected();
-    const d = this.fillBundleId(descriptor);
-    const response = await this.ws.sendRequest('atoll.presentLockScreenWidget', { descriptor: d });
-    this.checkError(response);
+    await this.sendDescriptor('atoll.presentLockScreenWidget', descriptor);
   }
 
   /** Update an existing lock screen widget. */
   async updateLockScreenWidget(descriptor: AtollLockScreenWidgetDescriptor): Promise<void> {
-    await this.ensureConnected();
-    const d = this.fillBundleId(descriptor);
-    const response = await this.ws.sendRequest('atoll.updateLockScreenWidget', { descriptor: d });
-    this.checkError(response);
+    await this.sendDescriptor('atoll.updateLockScreenWidget', descriptor);
   }
 
   /** Dismiss a lock screen widget by ID. */
@@ -169,18 +158,12 @@ export class AtollClient extends EventEmitter {
 
   /** Present a notch experience. */
   async presentNotchExperience(descriptor: AtollNotchExperienceDescriptor): Promise<void> {
-    await this.ensureConnected();
-    const d = this.fillBundleId(descriptor);
-    const response = await this.ws.sendRequest('atoll.presentNotchExperience', { descriptor: d });
-    this.checkError(response);
+    await this.sendDescriptor('atoll.presentNotchExperience', descriptor);
   }
 
   /** Update an existing notch experience. */
   async updateNotchExperience(descriptor: AtollNotchExperienceDescriptor): Promise<void> {
-    await this.ensureConnected();
-    const d = this.fillBundleId(descriptor);
-    const response = await this.ws.sendRequest('atoll.updateNotchExperience', { descriptor: d });
-    this.checkError(response);
+    await this.sendDescriptor('atoll.updateNotchExperience', descriptor);
   }
 
   /** Dismiss a notch experience by ID. */
@@ -234,6 +217,22 @@ export class AtollClient extends EventEmitter {
   private fillBundleId<T extends { bundleIdentifier: string }>(descriptor: T): T {
     if (!descriptor.bundleIdentifier) {
       return { ...descriptor, bundleIdentifier: this.bundleIdentifier };
+    }
+    return descriptor;
+  }
+
+  private async sendDescriptor<T extends { bundleIdentifier: string }>(method: string, descriptor: T): Promise<void> {
+    await this.ensureConnected();
+    const filled = this.fillBundleId(descriptor);
+    const withDefaults = this.withDescriptorDefaults(filled);
+    const normalized = normalizeRPCPayload(withDefaults) as T;
+    const response = await this.ws.sendRequest(method, { descriptor: normalized });
+    this.checkError(response);
+  }
+
+  private withDescriptorDefaults<T extends Record<string, unknown>>(descriptor: T): T {
+    if (!Object.prototype.hasOwnProperty.call(descriptor, 'metadata') || descriptor.metadata == null) {
+      return { ...descriptor, metadata: {} } as T;
     }
     return descriptor;
   }

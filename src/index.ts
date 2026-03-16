@@ -61,6 +61,17 @@ export {
 } from './models/AtollLockScreenWidgetDescriptor';
 
 export {
+  AtollWebScriptLanguage,
+  AtollWebScriptSource,
+  AtollWebDocumentSource,
+  AtollWebContentFromSourceOptions,
+  AtollWebContentFromURLOptions,
+  buildWebViewHTML,
+  createWebViewContentFromSource,
+  createWebViewContentFromURL,
+} from './models/AtollWebViewSource';
+
+export {
   AtollNotchExperienceDescriptor,
   AtollNotchTabConfiguration,
   AtollNotchMinimalisticConfiguration,

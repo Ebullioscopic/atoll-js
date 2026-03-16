@@ -97,10 +97,56 @@ client.on('disconnected', () => { ... });
 | `createLiveActivity(opts)` | Create a live activity descriptor |
 | `createLockScreenWidget(opts)` | Create a widget descriptor |
 | `createNotchExperience(opts)` | Create a notch experience descriptor |
+| `buildWebViewHTML(source)` | Build full webview HTML from body/CSS/script parts |
+| `createWebViewContentFromSource(opts)` | Build `webView` content and convert TS/JS script to browser JS |
+| `createWebViewContentFromURL(opts)` | Build localhost URL-backed `webView` content (for dev servers) |
 | `symbolIcon(name, size?, weight?)` | Create an SF Symbol icon |
 | `systemFont(size, weight?, design?)` | Create a font descriptor |
 | `ringIndicator(diameter?, strokeWidth?)` | Create a ring progress indicator |
 | `barIndicator(width?, height?)` | Create a bar progress indicator |
+
+### WebView Source Builder
+
+`atoll-js` now includes a source-based webview builder so you can provide body/CSS/script
+separately instead of manually composing a raw HTML string.
+
+```typescript
+import { createWebViewContentFromSource } from '@ebullioscopic/atoll-js';
+
+const webContent = createWebViewContentFromSource({
+  body: '<canvas id="c"></canvas>',
+  css: 'body { margin: 0; background: transparent; } canvas { width: 100%; height: 80px; }',
+  script: {
+    language: 'ts',
+    module: true,
+    code: `
+      const canvas = document.getElementById('c') as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D context unavailable');
+      // draw...
+    `,
+  },
+  preferredHeight: 140,
+  isTransparent: true,
+  allowLocalhostRequests: false,
+});
+```
+
+For localhost-backed web content (for example, a local dev server), use:
+
+```typescript
+import { createWebViewContentFromURL } from '@ebullioscopic/atoll-js';
+
+const webContent = createWebViewContentFromURL({
+  url: 'http://localhost:5173',
+  preferredHeight: 180,
+  isTransparent: true,
+  allowLocalhostRequests: true,
+});
+```
+
+Also, descriptor payloads are normalized to Swift Codable format automatically,
+including CGSize-compatible encoding (`{ width, height }` → `[width, height]`).
 
 ## Architecture
 

@@ -27,6 +27,8 @@ import {
   AtollSneakPeekConfig,
   AtollColors,
   createColor,
+  createWebViewContentFromSource,
+  createWebViewContentFromURL,
   AtollError,
   AtollErrorCode,
 } from '../../../dist';
@@ -38,6 +40,7 @@ import * as readline from 'readline';
 // ============================================================
 
 const BUNDLE_ID = 'com.example.atoll-js-demo';
+const LOCALHOST_DEMO_URL = process.env.ATOLL_WEBVIEW_LOCALHOST_URL || 'http://localhost:5173';
 
 const IDS = {
   download:      'js-demo-download',
@@ -53,6 +56,8 @@ const IDS = {
   notchTab:      'js-demo-notch-tab',
   notchMini:     'js-demo-notch-mini',
   notchCombo:    'js-demo-notch-combo',
+  notchFlight:   'js-demo-notch-flight',
+  notchFlightSimple: 'js-demo-notch-flight-simple',
 };
 
 let demoProgress = 0.35;
@@ -287,35 +292,6 @@ function makeCircularWidget(): AtollLockScreenWidgetDescriptor {
 }
 
 function makeWebWidget(): AtollLockScreenWidgetDescriptor {
-  const html = `<!doctype html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body { margin:0; background:transparent; font-family:-apple-system; color:white; }
-    .row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .dot { width:10px; height:10px; border-radius:999px; background:rgba(0,200,255,0.95); }
-    .title { font-size:13px; font-weight:600; opacity:0.85; }
-    canvas { width:100%; height:70px; display:block; }
-  </style>
-</head>
-<body>
-  <div class="row"><div class="dot"></div><div class="title">Realtime Sparkline</div></div>
-  <canvas id="c"></canvas>
-  <script>
-    const canvas=document.getElementById("c"),ctx=canvas.getContext("2d");
-    let pts=Array.from({length:20},()=>Math.random());
-    function resize(){canvas.width=canvas.clientWidth*devicePixelRatio;canvas.height=canvas.clientHeight*devicePixelRatio}
-    resize();window.addEventListener("resize",resize);
-    function tick(){pts.shift();pts.push(Math.random());ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath();ctx.lineWidth=3*devicePixelRatio;
-    for(let i=0;i<pts.length;i++){const x=(i/(pts.length-1))*canvas.width,y=canvas.height-pts[i]*canvas.height;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.strokeStyle="rgba(0,200,255,0.95)";ctx.stroke()}
-    setInterval(tick,450);tick();
-  </script>
-</body>
-</html>`;
-
   return {
     id: IDS.widgetWeb,
     bundleIdentifier: BUNDLE_ID,
@@ -327,12 +303,62 @@ function makeWebWidget(): AtollLockScreenWidgetDescriptor {
     content: [
       {
         type: 'webView',
-        content: {
-          html,
+        content: createWebViewContentFromSource({
+          body: '<div class="row"><div class="dot"></div><div class="title">Realtime Sparkline</div></div><canvas id="c"></canvas>',
+          css: `
+            body { margin:0; background:transparent; font-family:-apple-system; color:white; }
+            .row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+            .dot { width:10px; height:10px; border-radius:999px; background:rgba(0,200,255,0.95); }
+            .title { font-size:13px; font-weight:600; opacity:0.85; }
+            canvas { width:100%; height:70px; display:block; }
+          `,
+          script: {
+            language: 'ts',
+            code: `
+              const canvas = document.getElementById('c') as HTMLCanvasElement;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                throw new Error('2D context unavailable');
+              }
+
+              const pts: number[] = Array.from({ length: 20 }, () => Math.random());
+
+              function resize(): void {
+                canvas.width = canvas.clientWidth * devicePixelRatio;
+                canvas.height = canvas.clientHeight * devicePixelRatio;
+              }
+
+              function tick(): void {
+                pts.shift();
+                pts.push(Math.random());
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.lineWidth = 3 * devicePixelRatio;
+
+                for (let i = 0; i < pts.length; i += 1) {
+                  const x = (i / (pts.length - 1)) * canvas.width;
+                  const y = canvas.height - pts[i] * canvas.height;
+                  if (i === 0) {
+                    ctx.moveTo(x, y);
+                  } else {
+                    ctx.lineTo(x, y);
+                  }
+                }
+
+                ctx.strokeStyle = 'rgba(0,200,255,0.95)';
+                ctx.stroke();
+              }
+
+              resize();
+              window.addEventListener('resize', resize);
+              setInterval(tick, 450);
+              tick();
+            `,
+          },
           preferredHeight: 140,
           isTransparent: true,
           allowLocalhostRequests: false,
-        },
+        }),
       },
     ],
     accentColor: AtollColors.white,
@@ -351,6 +377,7 @@ function makeSimpleTabExperience(): AtollNotchExperienceDescriptor {
     bundleIdentifier: BUNDLE_ID,
     priority: AtollLiveActivityPriority.Normal,
     accentColor: AtollColors.white,
+    metadata: {},
     tab: {
       title: 'Demo',
       iconSymbolName: 'sparkles',
@@ -377,6 +404,7 @@ function makeMinimalisticExperience(): AtollNotchExperienceDescriptor {
     bundleIdentifier: BUNDLE_ID,
     priority: AtollLiveActivityPriority.Normal,
     accentColor: AtollColors.white,
+    metadata: {},
     minimalistic: {
       headline: 'Minimalistic',
       subtitle: 'Override demo',
@@ -402,6 +430,7 @@ function makeCombinedExperience(): AtollNotchExperienceDescriptor {
     bundleIdentifier: BUNDLE_ID,
     priority: AtollLiveActivityPriority.High,
     accentColor: AtollColors.white,
+    metadata: {},
     tab: {
       title: 'Combined',
       iconSymbolName: 'square.stack.3d.up.fill',
@@ -434,6 +463,313 @@ function makeCombinedExperience(): AtollNotchExperienceDescriptor {
         },
       ],
       layout: 'stack',
+      hidesMusicControls: false,
+    },
+  };
+}
+
+function makeFlightAnimationNotchExperience(): AtollNotchExperienceDescriptor {
+  const safeProgress = Math.max(0.05, Math.min(flightProgress, 0.95));
+  const flightWeb = createWebViewContentFromSource({
+    body: '<canvas id="flight-canvas"></canvas>',
+    css: `
+      html, body, #flight-canvas { width: 100%; height: 100%; margin: 0; }
+      body { background: transparent; overflow: hidden; }
+      #flight-canvas { display: block; }
+    `,
+    script: {
+      language: 'ts',
+      module: true,
+      code: `
+        import * as THREE from 'https://unpkg.com/three@0.162.0/build/three.module.js';
+
+        const canvas = document.getElementById('flight-canvas') as HTMLCanvasElement;
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 100);
+        camera.position.set(0, 0.8, 4.6);
+
+        const ambient = new THREE.AmbientLight(0xffffff, 0.85);
+        const key = new THREE.DirectionalLight(0x8bd8ff, 0.9);
+        key.position.set(1.8, 2.6, 2.0);
+        scene.add(ambient, key);
+
+        const route = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-2.4, -0.45, 0),
+            new THREE.Vector3(-1.4, 0.1, 0),
+            new THREE.Vector3(-0.2, 0.28, 0),
+            new THREE.Vector3(0.9, 0.1, 0),
+            new THREE.Vector3(2.4, -0.35, 0),
+          ]),
+          new THREE.LineBasicMaterial({ color: 0x4fd7ff, transparent: true, opacity: 0.78 })
+        );
+        scene.add(route);
+
+        const plane = new THREE.Mesh(
+          new THREE.ConeGeometry(0.09, 0.36, 3),
+          new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.35 })
+        );
+        plane.rotation.z = -Math.PI / 2;
+        scene.add(plane);
+
+        const trail = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.6, 0.03),
+          new THREE.MeshBasicMaterial({ color: 0x99ecff, transparent: true, opacity: 0.5 })
+        );
+        scene.add(trail);
+
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(-2.4, -0.45, 0),
+          new THREE.Vector3(-1.4, 0.1, 0),
+          new THREE.Vector3(-0.2, 0.28, 0),
+          new THREE.Vector3(0.9, 0.1, 0),
+          new THREE.Vector3(2.4, -0.35, 0),
+        ]);
+
+        let progress = ${safeProgress.toFixed(4)};
+
+        function resize(): void {
+          const width = Math.max(canvas.clientWidth, 10);
+          const height = Math.max(canvas.clientHeight, 10);
+          renderer.setSize(width, height, false);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+        }
+
+        function renderFrame(timeMS: number): void {
+          progress = Math.min(0.995, progress + 0.00065);
+          const point = curve.getPoint(progress);
+          const lookAhead = curve.getPoint(Math.min(0.999, progress + 0.01));
+
+          plane.position.copy(point);
+          plane.lookAt(lookAhead);
+
+          trail.position.set(point.x - 0.3, point.y, point.z - 0.01);
+          trail.rotation.z = plane.rotation.y;
+          trail.material.opacity = 0.42 + Math.sin(timeMS * 0.0045) * 0.08;
+
+          renderer.render(scene, camera);
+          requestAnimationFrame(renderFrame);
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+        requestAnimationFrame(renderFrame);
+      `,
+    },
+    preferredHeight: 200,
+    isTransparent: true,
+    allowLocalhostRequests: false,
+  });
+
+  return {
+    id: IDS.notchFlight,
+    bundleIdentifier: BUNDLE_ID,
+    priority: AtollLiveActivityPriority.High,
+    accentColor: AtollColors.white,
+    metadata: { progress: safeProgress.toFixed(3), renderer: 'threejs' },
+    tab: {
+      title: 'Flight',
+      iconSymbolName: 'airplane.circle.fill',
+      preferredHeight: 220,
+      sections: [],
+      webContent: flightWeb,
+      allowWebInteraction: false,
+      footnote: 'SFO -> JFK',
+    },
+    minimalistic: {
+      sections: [],
+      webContent: {
+        ...flightWeb,
+        preferredHeight: 155,
+      },
+      layout: 'custom',
+      hidesMusicControls: false,
+    },
+  };
+}
+
+function makeLocalhostWebWidget(): AtollLockScreenWidgetDescriptor {
+  return {
+    id: `${IDS.widgetWeb}-localhost`,
+    bundleIdentifier: BUNDLE_ID,
+    layoutStyle: 'custom',
+    position: { alignment: 'center', verticalOffset: -140 },
+    size: { width: 320, height: 190 },
+    material: 'clear',
+    cornerRadius: 24,
+    content: [
+      {
+        type: 'webView',
+        content: createWebViewContentFromURL({
+          url: LOCALHOST_DEMO_URL,
+          preferredHeight: 180,
+          isTransparent: true,
+          allowLocalhostRequests: true,
+        }),
+      },
+    ],
+    accentColor: AtollColors.white,
+    dismissOnUnlock: true,
+    priority: AtollLiveActivityPriority.Normal,
+  };
+}
+
+function makeFlightAnimationSimpleNotchExperience(): AtollNotchExperienceDescriptor {
+  const safeProgress = Math.max(0.0, Math.min(flightProgress, 1.0));
+  const flightWeb = createWebViewContentFromSource({
+    body: '<canvas id="c"></canvas>',
+    css: `
+      body { margin:0; background:transparent; overflow:hidden; }
+      canvas { width:100%; height:100%; display:block; }
+    `,
+    script: {
+      language: 'ts',
+      code: `
+        const canvas = document.getElementById('c') as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('Canvas context unavailable');
+        }
+
+        function resize(): void {
+          canvas.width = Math.max(10, canvas.clientWidth) * devicePixelRatio;
+          canvas.height = Math.max(10, canvas.clientHeight) * devicePixelRatio;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const planeSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path fill="white" d="M62 30c0-1.1-.9-2-2-2H39.7L26.9 9.8c-.4-.6-1.1-1-1.9-1H21c-1.1 0-2 .9-2 2v17.2L9.4 28l-3.1-7.2c-.3-.8-1.1-1.3-1.9-1.3H2c-1.1 0-2 .9-2 2v3l8 8-8 8v3c0 1.1.9 2 2 2h2.4c.8 0 1.6-.5 1.9-1.3L9.4 36l9.6 0v17.2c0 1.1.9 2 2 2h4c.8 0 1.5-.4 1.9-1L39.7 36H60c1.1 0 2-.9 2-2z"/></svg>';
+        const planeImg = new Image();
+        planeImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(planeSvg);
+
+        let progress = ${safeProgress.toFixed(4)};
+        let t = 0;
+
+        function quadBezier(p0: {x:number;y:number}, p1: {x:number;y:number}, p2: {x:number;y:number}, tt: number): {x:number;y:number} {
+          const x = (1-tt)*(1-tt)*p0.x + 2*(1-tt)*tt*p1.x + tt*tt*p2.x;
+          const y = (1-tt)*(1-tt)*p0.y + 2*(1-tt)*tt*p1.y + tt*tt*p2.y;
+          return { x, y };
+        }
+
+        function drawLabel(x: number, y: number, code: string, name: string, align: CanvasTextAlign): void {
+          ctx.save();
+          ctx.textAlign = align;
+          ctx.textBaseline = 'top';
+          ctx.font = (12 * devicePixelRatio) + 'px -apple-system';
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.fillText(code, x, y);
+          ctx.font = (10.5 * devicePixelRatio) + 'px -apple-system';
+          ctx.fillStyle = 'rgba(255,255,255,0.65)';
+          ctx.fillText(name, x, y + 14 * devicePixelRatio);
+          ctx.restore();
+        }
+
+        function draw(): void {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          const w = canvas.width;
+          const h = canvas.height;
+          const padX = 26 * devicePixelRatio;
+          const bottomSafe = 34 * devicePixelRatio;
+          const baseY = h - bottomSafe - (10 * devicePixelRatio);
+
+          const left = { x: padX, y: baseY };
+          const right = { x: w - padX, y: baseY };
+          const control = { x: w * 0.5, y: h * 0.16 };
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(left.x, left.y);
+          ctx.quadraticCurveTo(control.x, control.y, right.x, right.y);
+          ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+          ctx.lineWidth = 6 * devicePixelRatio;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(left.x, left.y);
+          ctx.quadraticCurveTo(control.x, control.y, right.x, right.y);
+          ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+          ctx.lineWidth = 2.2 * devicePixelRatio;
+          ctx.setLineDash([5 * devicePixelRatio, 8 * devicePixelRatio]);
+          ctx.lineCap = 'round';
+          ctx.stroke();
+          ctx.restore();
+
+          for (const pt of [left, right]) {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 14 * devicePixelRatio, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,200,255,0.16)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6 * devicePixelRatio, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.92)';
+            ctx.fill();
+          }
+
+          drawLabel(left.x, left.y + 14 * devicePixelRatio, 'SFO', 'Boarding', 'left');
+          drawLabel(right.x, right.y + 14 * devicePixelRatio, 'JFK', 'Arrivals', 'right');
+
+          const microDrift = 0.012 * Math.sin(t * 0.9);
+          const pp = Math.max(0, Math.min(1, progress + microDrift));
+
+          const pos = quadBezier(left, control, right, pp);
+          const ahead = quadBezier(left, control, right, Math.min(1, pp + 0.01));
+          const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x);
+          const size = 24 * devicePixelRatio;
+
+          if (planeImg.complete) {
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(angle);
+            ctx.globalAlpha = 0.97;
+            ctx.drawImage(planeImg, -size * 0.6, -size * 0.45, size * 1.2, size * 0.9);
+            ctx.restore();
+          }
+
+          t += 0.02;
+          requestAnimationFrame(draw);
+        }
+
+        planeImg.onload = () => requestAnimationFrame(draw);
+        if (planeImg.complete) {
+          requestAnimationFrame(draw);
+        }
+      `,
+    },
+    preferredHeight: 200,
+    isTransparent: true,
+    allowLocalhostRequests: false,
+  });
+
+  return {
+    id: IDS.notchFlightSimple,
+    bundleIdentifier: BUNDLE_ID,
+    priority: AtollLiveActivityPriority.High,
+    accentColor: AtollColors.white,
+    metadata: { progress: safeProgress.toFixed(3), renderer: 'canvas2d' },
+    tab: {
+      title: 'Flight (Simple)',
+      iconSymbolName: 'airplane.circle.fill',
+      preferredHeight: 220,
+      sections: [],
+      webContent: flightWeb,
+      allowWebInteraction: false,
+      footnote: 'No external scripts',
+    },
+    minimalistic: {
+      sections: [],
+      webContent: {
+        ...flightWeb,
+        preferredHeight: 155,
+      },
+      layout: 'custom',
       hidesMusicControls: false,
     },
   };
@@ -548,8 +884,12 @@ async function main() {
             await client.presentLockScreenWidget(makeWebWidget());
             console.log('Presented: Web Widget (sparkline)');
             break;
+          case '24':
+            await client.presentLockScreenWidget(makeLocalhostWebWidget());
+            console.log(`Presented: Localhost Web Widget (${LOCALHOST_DEMO_URL})`);
+            break;
           case '29':
-            for (const id of [IDS.widgetInline, IDS.widgetCard, IDS.widgetCircle, IDS.widgetWeb]) {
+            for (const id of [IDS.widgetInline, IDS.widgetCard, IDS.widgetCircle, IDS.widgetWeb, `${IDS.widgetWeb}-localhost`]) {
               try { await client.dismissLockScreenWidget(id); } catch {}
             }
             console.log('Dismissed all widgets');
@@ -568,8 +908,28 @@ async function main() {
             await client.presentNotchExperience(makeCombinedExperience());
             console.log('Presented: Combined');
             break;
+          case '33':
+            flightProgress = Math.max(0.05, Math.min(flightProgress, 0.95));
+            await client.presentNotchExperience(makeFlightAnimationNotchExperience());
+            console.log('Presented: Flight Animation (Three.js)');
+            break;
+          case '34':
+            flightProgress = Math.min(flightProgress + 0.1, 1.0);
+            await client.updateNotchExperience(makeFlightAnimationNotchExperience());
+            console.log(`Updated: Flight Animation -> ${Math.round(flightProgress * 100)}%`);
+            break;
+          case '35':
+            flightProgress = Math.max(0.05, Math.min(flightProgress, 0.95));
+            await client.presentNotchExperience(makeFlightAnimationSimpleNotchExperience());
+            console.log('Presented: Flight Animation Simple (Canvas)');
+            break;
+          case '36':
+            flightProgress = Math.min(flightProgress + 0.1, 1.0);
+            await client.updateNotchExperience(makeFlightAnimationSimpleNotchExperience());
+            console.log(`Updated: Flight Animation Simple -> ${Math.round(flightProgress * 100)}%`);
+            break;
           case '39':
-            for (const id of [IDS.notchTab, IDS.notchMini, IDS.notchCombo]) {
+            for (const id of [IDS.notchTab, IDS.notchMini, IDS.notchCombo, IDS.notchFlight, IDS.notchFlightSimple]) {
               try { await client.dismissNotchExperience(id); } catch {}
             }
             console.log('Dismissed all notch experiences');
@@ -629,12 +989,17 @@ function printMenu() {
 ║  21  Present Card Widget (liquid)    ║
 ║  22  Present Circular Widget         ║
 ║  23  Present Web Widget (sparkline)  ║
+║  24  Present Localhost Web Widget    ║
 ║  29  Dismiss All Widgets             ║
 ╠══════════════════════════════════════╣
 ║  NOTCH EXPERIENCES                   ║
 ║  30  Present Simple Tab              ║
 ║  31  Present Minimalistic            ║
 ║  32  Present Combined                ║
+║  33  Present Flight Animation (3D)   ║
+║  34  Update Flight Animation (+10%)  ║
+║  35  Present Flight Simple (Canvas)  ║
+║  36  Update Flight Simple (+10%)     ║
 ║  39  Dismiss All Notch Experiences   ║
 ╠══════════════════════════════════════╣
 ║  h   Help  |  q   Quit              ║
