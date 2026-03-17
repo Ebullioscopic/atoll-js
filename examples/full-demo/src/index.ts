@@ -34,6 +34,8 @@ import {
 } from '../../../dist';
 
 import * as readline from 'readline';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // ============================================================
 // Constants
@@ -63,6 +65,8 @@ const IDS = {
 let demoProgress = 0.35;
 let flightProgress = 0.12;
 
+const FLIGHT_TEMPLATE_PATH = path.resolve(process.cwd(), 'assets/flight-3d-inline.html');
+
 // ============================================================
 // Helper: font descriptors
 // ============================================================
@@ -73,6 +77,125 @@ function systemFont(size: number, weight: string = 'regular'): AtollFontDescript
 
 function monoFont(size: number, weight: string = 'semibold'): AtollFontDescriptor {
   return { size, weight: weight as any, design: 'monospaced' };
+}
+
+function loadFlightHTML(progress01: number): string {
+  const safe = Math.max(0.0, Math.min(progress01, 1.0));
+  const fallback = `<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { margin:0; background:transparent; overflow:hidden; }
+    canvas { width:100%; height:100%; display:block; }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+    let progress = __PROGRESS__;
+    let t = 0;
+
+    function resize() {
+      canvas.width = Math.max(10, canvas.clientWidth) * devicePixelRatio;
+      canvas.height = Math.max(10, canvas.clientHeight) * devicePixelRatio;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    const planeSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path fill="white" d="M62 30c0-1.1-.9-2-2-2H39.7L26.9 9.8c-.4-.6-1.1-1-1.9-1H21c-1.1 0-2 .9-2 2v17.2L9.4 28l-3.1-7.2c-.3-.8-1.1-1.3-1.9-1.3H2c-1.1 0-2 .9-2 2v3l8 8-8 8v3c0 1.1.9 2 2 2h2.4c.8 0 1.6-.5 1.9-1.3L9.4 36l9.6 0v17.2c0 1.1.9 2 2 2h4c.8 0 1.5-.4 1.9-1L39.7 36H60c1.1 0 2-.9 2-2z"/></svg>';
+    const planeImg = new Image();
+    planeImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(planeSvg);
+
+    function bezier(p0, p1, p2, tt) {
+      return {
+        x: (1-tt)*(1-tt)*p0.x + 2*(1-tt)*tt*p1.x + tt*tt*p2.x,
+        y: (1-tt)*(1-tt)*p0.y + 2*(1-tt)*tt*p1.y + tt*tt*p2.y,
+      };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.width;
+      const h = canvas.height;
+      const padX = 26 * devicePixelRatio;
+      const bottomSafe = 34 * devicePixelRatio;
+      const baseY = h - bottomSafe - (10 * devicePixelRatio);
+
+      const left = { x: padX, y: baseY };
+      const right = { x: w - padX, y: baseY };
+      const control = { x: w * 0.5, y: h * 0.16 };
+
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "rgba(120,200,255,0.10)");
+      grad.addColorStop(1, "rgba(10,16,24,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.quadraticCurveTo(control.x, control.y, right.x, right.y);
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 6 * devicePixelRatio;
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.quadraticCurveTo(control.x, control.y, right.x, right.y);
+      ctx.strokeStyle = "rgba(120,220,255,0.65)";
+      ctx.lineWidth = 2.2 * devicePixelRatio;
+      ctx.setLineDash([5 * devicePixelRatio, 8 * devicePixelRatio]);
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const drift = 0.012 * Math.sin(t * 0.9);
+      const pp = Math.max(0, Math.min(1, progress + drift));
+      const pos = bezier(left, control, right, pp);
+      const ahead = bezier(left, control, right, Math.min(1, pp + 0.01));
+      const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x);
+      const size = 24 * devicePixelRatio;
+
+      ctx.save();
+      ctx.translate(pos.x, pos.y + 6 * devicePixelRatio);
+      ctx.rotate(angle);
+      ctx.scale(1.1, 0.55);
+      ctx.beginPath();
+      ctx.arc(0, 0, 9 * devicePixelRatio, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.28)";
+      ctx.fill();
+      ctx.restore();
+
+      if (planeImg.complete) {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(angle + Math.sin(t * 2.4) * 0.05);
+        ctx.globalAlpha = 0.98;
+        ctx.drawImage(planeImg, -size * 0.6, -size * 0.45, size * 1.2, size * 0.9);
+        ctx.restore();
+      }
+
+      t += 0.02;
+      requestAnimationFrame(draw);
+    }
+
+    planeImg.onload = () => requestAnimationFrame(draw);
+    if (planeImg.complete) requestAnimationFrame(draw);
+  </script>
+</body>
+</html>`;
+
+  let template = fallback;
+  try {
+    template = fs.readFileSync(FLIGHT_TEMPLATE_PATH, 'utf8');
+  } catch {
+    // Keep demo resilient if template file is missing.
+  }
+
+  return template.replace(/__PROGRESS__/g, safe.toFixed(4));
 }
 
 // ============================================================
@@ -470,100 +593,14 @@ function makeCombinedExperience(): AtollNotchExperienceDescriptor {
 
 function makeFlightAnimationNotchExperience(): AtollNotchExperienceDescriptor {
   const safeProgress = Math.max(0.05, Math.min(flightProgress, 0.95));
-  const flightWeb = createWebViewContentFromSource({
-    body: '<canvas id="flight-canvas"></canvas>',
-    css: `
-      html, body, #flight-canvas { width: 100%; height: 100%; margin: 0; }
-      body { background: transparent; overflow: hidden; }
-      #flight-canvas { display: block; }
-    `,
-    script: {
-      language: 'ts',
-      module: true,
-      code: `
-        import * as THREE from 'https://unpkg.com/three@0.162.0/build/three.module.js';
-
-        const canvas = document.getElementById('flight-canvas') as HTMLCanvasElement;
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 100);
-        camera.position.set(0, 0.8, 4.6);
-
-        const ambient = new THREE.AmbientLight(0xffffff, 0.85);
-        const key = new THREE.DirectionalLight(0x8bd8ff, 0.9);
-        key.position.set(1.8, 2.6, 2.0);
-        scene.add(ambient, key);
-
-        const route = new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(-2.4, -0.45, 0),
-            new THREE.Vector3(-1.4, 0.1, 0),
-            new THREE.Vector3(-0.2, 0.28, 0),
-            new THREE.Vector3(0.9, 0.1, 0),
-            new THREE.Vector3(2.4, -0.35, 0),
-          ]),
-          new THREE.LineBasicMaterial({ color: 0x4fd7ff, transparent: true, opacity: 0.78 })
-        );
-        scene.add(route);
-
-        const plane = new THREE.Mesh(
-          new THREE.ConeGeometry(0.09, 0.36, 3),
-          new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.35 })
-        );
-        plane.rotation.z = -Math.PI / 2;
-        scene.add(plane);
-
-        const trail = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.6, 0.03),
-          new THREE.MeshBasicMaterial({ color: 0x99ecff, transparent: true, opacity: 0.5 })
-        );
-        scene.add(trail);
-
-        const curve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(-2.4, -0.45, 0),
-          new THREE.Vector3(-1.4, 0.1, 0),
-          new THREE.Vector3(-0.2, 0.28, 0),
-          new THREE.Vector3(0.9, 0.1, 0),
-          new THREE.Vector3(2.4, -0.35, 0),
-        ]);
-
-        let progress = ${safeProgress.toFixed(4)};
-
-        function resize(): void {
-          const width = Math.max(canvas.clientWidth, 10);
-          const height = Math.max(canvas.clientHeight, 10);
-          renderer.setSize(width, height, false);
-          camera.aspect = width / height;
-          camera.updateProjectionMatrix();
-        }
-
-        function renderFrame(timeMS: number): void {
-          progress = Math.min(0.995, progress + 0.00065);
-          const point = curve.getPoint(progress);
-          const lookAhead = curve.getPoint(Math.min(0.999, progress + 0.01));
-
-          plane.position.copy(point);
-          plane.lookAt(lookAhead);
-
-          trail.position.set(point.x - 0.3, point.y, point.z - 0.01);
-          trail.rotation.z = plane.rotation.y;
-          trail.material.opacity = 0.42 + Math.sin(timeMS * 0.0045) * 0.08;
-
-          renderer.render(scene, camera);
-          requestAnimationFrame(renderFrame);
-        }
-
-        resize();
-        window.addEventListener('resize', resize);
-        requestAnimationFrame(renderFrame);
-      `,
-    },
+  const flightHTML = loadFlightHTML(safeProgress);
+  const flightWeb = {
+    html: flightHTML,
     preferredHeight: 200,
     isTransparent: true,
     allowLocalhostRequests: false,
-  });
+    allowRemoteRequests: false,
+  };
 
   return {
     id: IDS.notchFlight,
@@ -911,7 +948,7 @@ async function main() {
           case '33':
             flightProgress = Math.max(0.05, Math.min(flightProgress, 0.95));
             await client.presentNotchExperience(makeFlightAnimationNotchExperience());
-            console.log('Presented: Flight Animation (Three.js)');
+            console.log('Presented: Flight Animation (Inline 3D)');
             break;
           case '34':
             flightProgress = Math.min(flightProgress + 0.1, 1.0);

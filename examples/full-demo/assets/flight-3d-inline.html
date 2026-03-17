@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atoll Flight 3D Inline</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: #07111c;
+      overflow: hidden;
+      font-family: -apple-system, system-ui, sans-serif;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+
+    let progress = (typeof __PROGRESS__ === "number") ? __PROGRESS__ : 0.12;
+    let t = 0;
+
+    function resize() {
+      canvas.width = Math.max(10, canvas.clientWidth) * devicePixelRatio;
+      canvas.height = Math.max(10, canvas.clientHeight) * devicePixelRatio;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    const planeSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path fill="white" d="M62 30c0-1.1-.9-2-2-2H39.7L26.9 9.8c-.4-.6-1.1-1-1.9-1H21c-1.1 0-2 .9-2 2v17.2L9.4 28l-3.1-7.2c-.3-.8-1.1-1.3-1.9-1.3H2c-1.1 0-2 .9-2 2v3l8 8-8 8v3c0 1.1.9 2 2 2h2.4c.8 0 1.6-.5 1.9-1.3L9.4 36l9.6 0v17.2c0 1.1.9 2 2 2h4c.8 0 1.5-.4 1.9-1L39.7 36H60c1.1 0 2-.9 2-2z"/></svg>';
+    const planeImg = new Image();
+    planeImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(planeSvg);
+
+    function bezier(p0, p1, p2, tt) {
+      return {
+        x: (1 - tt) * (1 - tt) * p0.x + 2 * (1 - tt) * tt * p1.x + tt * tt * p2.x,
+        y: (1 - tt) * (1 - tt) * p0.y + 2 * (1 - tt) * tt * p1.y + tt * tt * p2.y,
+      };
+    }
+
+    function drawLabel(x, y, code, name, align) {
+      ctx.save();
+      ctx.textAlign = align;
+      ctx.textBaseline = "top";
+      ctx.font = `${12 * devicePixelRatio}px -apple-system`;
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.fillText(code, x, y);
+      ctx.font = `${10.5 * devicePixelRatio}px -apple-system`;
+      ctx.fillStyle = "rgba(255,255,255,0.65)";
+      ctx.fillText(name, x, y + 14 * devicePixelRatio);
+      ctx.restore();
+    }
+
+    function draw() {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, "rgba(18,42,63,0.55)");
+      bg.addColorStop(1, "rgba(7,17,28,0.0)");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      const padX = 26 * devicePixelRatio;
+      const bottomSafe = 34 * devicePixelRatio;
+      const baseY = h - bottomSafe - (10 * devicePixelRatio);
+
+      const left = { x: padX, y: baseY };
+      const right = { x: w - padX, y: baseY };
+      const control = { x: w * 0.5, y: h * 0.16 };
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.quadraticCurveTo(control.x, control.y, right.x, right.y);
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 6 * devicePixelRatio;
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.quadraticCurveTo(control.x, control.y, right.x, right.y);
+      ctx.strokeStyle = "rgba(120,220,255,0.70)";
+      ctx.lineWidth = 2.2 * devicePixelRatio;
+      ctx.setLineDash([5 * devicePixelRatio, 8 * devicePixelRatio]);
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.restore();
+
+      for (const pt of [left, right]) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 14 * devicePixelRatio, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,200,255,0.16)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 6 * devicePixelRatio, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        ctx.fill();
+      }
+
+      drawLabel(left.x, left.y + 14 * devicePixelRatio, "SFO", "Boarding", "left");
+      drawLabel(right.x, right.y + 14 * devicePixelRatio, "JFK", "Arrivals", "right");
+
+      const drift = 0.012 * Math.sin(t * 0.9);
+      const pp = Math.max(0, Math.min(1, progress + drift));
+
+      const pos = bezier(left, control, right, pp);
+      const ahead = bezier(left, control, right, Math.min(1, pp + 0.01));
+      const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x);
+      const size = 24 * devicePixelRatio;
+
+      ctx.save();
+      ctx.translate(pos.x, pos.y + 6 * devicePixelRatio);
+      ctx.rotate(angle);
+      ctx.scale(1.12, 0.55);
+      ctx.beginPath();
+      ctx.arc(0, 0, 9 * devicePixelRatio, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.30)";
+      ctx.fill();
+      ctx.restore();
+
+      if (planeImg.complete) {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(angle + Math.sin(t * 2.4) * 0.05);
+        ctx.globalAlpha = 0.98;
+        ctx.drawImage(planeImg, -size * 0.6, -size * 0.45, size * 1.2, size * 0.9);
+        ctx.restore();
+      }
+
+      t += 0.02;
+      requestAnimationFrame(draw);
+    }
+
+    planeImg.onload = () => requestAnimationFrame(draw);
+    if (planeImg.complete) {
+      requestAnimationFrame(draw);
+    }
+  </script>
+</body>
+</html>
