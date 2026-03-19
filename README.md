@@ -149,6 +149,12 @@ const webContent = createWebViewContentFromURL({
 Also, descriptor payloads are normalized to Swift Codable format automatically,
 including CGSize-compatible encoding (`{ width, height }` → `[width, height]`).
 
+Additional transport guarantees:
+
+- Priority values are sent as string enums (`low`, `normal`, `high`, `critical`).
+- Color channels (`red`, `green`, `blue`, `alpha`) are sent as numeric values.
+- Missing descriptor metadata is normalized to an empty object.
+
 ## Architecture
 
 ```

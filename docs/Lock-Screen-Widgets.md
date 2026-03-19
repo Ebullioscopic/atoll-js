@@ -67,8 +67,11 @@ position: {
 { type: 'divider', color: AtollColors.white, thickness: 1 }
 
 // Web view
-{ type: 'webView', content: { html: '<html>...</html>', preferredHeight: 140, isTransparent: true, allowLocalhostRequests: false } }
+{ type: 'webView', content: { html: '<html>...</html>', preferredHeight: 140, isTransparent: true, allowLocalhostRequests: false, allowRemoteRequests: false } }
 ```
+
+Use `allowLocalhostRequests` for localhost development servers and enable
+`allowRemoteRequests` only when external hosts are required.
 
 ## Appearance Options
 

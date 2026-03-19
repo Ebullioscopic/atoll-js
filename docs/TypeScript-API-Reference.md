@@ -131,7 +131,7 @@ function isAccentColor(color: AtollColorDescriptor): boolean;
 ## Enums
 
 ```typescript
-enum AtollLiveActivityPriority { Low = 0, Normal = 1, High = 2, Critical = 3 }
+enum AtollLiveActivityPriority { Low = 'low', Normal = 'normal', High = 'high', Critical = 'critical' }
 type AtollFontWeight = 'ultraLight' | 'thin' | 'light' | 'regular' | 'medium' | 'semibold' | 'bold' | 'heavy' | 'black';
 type AtollFontDesign = 'default' | 'serif' | 'rounded' | 'monospaced';
 type AtollCenterTextStyle = 'inheritUser' | 'standard' | 'inline';

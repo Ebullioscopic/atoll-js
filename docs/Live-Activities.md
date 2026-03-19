@@ -24,10 +24,10 @@ await client.presentLiveActivity(activity);
 
 ```typescript
 enum AtollLiveActivityPriority {
-  Low = 0,       // Yields to others
-  Normal = 1,    // Default
-  High = 2,      // Takes precedence
-  Critical = 3,  // Always shown
+  Low = 'low',           // Yields to others
+  Normal = 'normal',     // Default
+  High = 'high',         // Takes precedence
+  Critical = 'critical', // Always shown
 }
 ```
 
