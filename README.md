@@ -1,6 +1,6 @@
 # atoll-js
 
-[![JavaScript](https://img.shields.io/badge/Node.js-23-yellow.svg)](https://swift.org)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-yellow.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/Platform-macOS%2013.0+-lightgrey.svg)](https://www.apple.com/macos/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
