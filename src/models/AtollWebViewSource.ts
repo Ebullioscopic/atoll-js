@@ -24,9 +24,10 @@ export interface AtollWebContentFromSourceOptions
     AtollWebDocumentSource {}
 
 export interface AtollWebContentFromURLOptions
-  extends Omit<AtollWidgetWebContentDescriptor, 'html' | 'allowLocalhostRequests'> {
+  extends Omit<AtollWidgetWebContentDescriptor, 'html' | 'allowLocalhostRequests' | 'allowRemoteRequests'> {
   url: string;
   allowLocalhostRequests?: boolean;
+  allowRemoteRequests?: boolean;
 }
 
 function transpileIfNeeded(script: string | AtollWebScriptSource): string {
@@ -97,6 +98,7 @@ export function createWebViewContentFromSource(
     preferredHeight: options.preferredHeight,
     isTransparent: options.isTransparent,
     allowLocalhostRequests: options.allowLocalhostRequests,
+    allowRemoteRequests: options.allowRemoteRequests,
     backgroundColor: options.backgroundColor,
     maximumContentWidth: options.maximumContentWidth,
   };
@@ -136,6 +138,7 @@ export function createWebViewContentFromURL(
     preferredHeight: options.preferredHeight,
     isTransparent: options.isTransparent,
     allowLocalhostRequests: options.allowLocalhostRequests ?? true,
+    allowRemoteRequests: options.allowRemoteRequests ?? false,
     backgroundColor: options.backgroundColor,
     maximumContentWidth: options.maximumContentWidth,
   };

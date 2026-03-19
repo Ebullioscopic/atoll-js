@@ -129,6 +129,7 @@ const webContent = createWebViewContentFromSource({
   preferredHeight: 140,
   isTransparent: true,
   allowLocalhostRequests: false,
+  allowRemoteRequests: true, // Enable CDN/library loading when needed
 });
 ```
 

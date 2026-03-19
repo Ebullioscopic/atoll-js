@@ -65,6 +65,7 @@ export interface AtollWidgetWebContentDescriptor {
   preferredHeight: number;
   isTransparent: boolean;
   allowLocalhostRequests: boolean;
+  allowRemoteRequests?: boolean;
   backgroundColor?: AtollColorDescriptor;
   maximumContentWidth?: number;
 }
