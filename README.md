@@ -2,10 +2,14 @@
 
 A JavaScript/TypeScript SDK for interacting with [Atoll](https://github.com/Ebullioscopic/Atoll) via JSON-RPC over WebSocket. Display **live activities**, **lock screen widgets**, and **notch experiences** from any application.
 
+<p align="center">
+    <img src=".github/assets/atoll-js.png" alt="AtollRPC" width="180">
+</p>
+
 ## Requirements
 
 - Node.js 18+
-- Atoll with RPC server enabled (v1.0.0+)
+- Atoll with RPC server enabled (v2.0.1+)
 
 ## Installation
 
