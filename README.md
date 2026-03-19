@@ -1,5 +1,9 @@
 # atoll-js
 
+[![JavaScript](https://img.shields.io/badge/Node.js-23-yellow.svg)](https://swift.org)
+[![Platform](https://img.shields.io/badge/Platform-macOS%2013.0+-lightgrey.svg)](https://www.apple.com/macos/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A JavaScript/TypeScript SDK for interacting with [Atoll](https://github.com/Ebullioscopic/Atoll) via JSON-RPC over WebSocket. Display **live activities**, **lock screen widgets**, and **notch experiences** from any application.
 
 <p align="center">
