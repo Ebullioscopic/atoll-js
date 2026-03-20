@@ -20,6 +20,8 @@ export interface AtollClientEvents {
   notchExperienceDismiss: (experienceID: string) => void;
   connected: () => void;
   disconnected: () => void;
+  atollActive: () => void;
+  atollIdle: () => void;
 }
 
 /**
@@ -204,8 +206,14 @@ export class AtollClient extends EventEmitter {
       }
     };
 
-    this.ws.onConnect = () => this.emit('connected');
-    this.ws.onDisconnect = () => this.emit('disconnected');
+    this.ws.onConnect = () => {
+      this.emit('connected');
+      this.emit('atollActive');
+    };
+    this.ws.onDisconnect = () => {
+      this.emit('disconnected');
+      this.emit('atollIdle');
+    };
   }
 
   private async ensureConnected(): Promise<void> {

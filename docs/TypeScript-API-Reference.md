@@ -55,6 +55,8 @@ interface AtollClientEvents {
   notchExperienceDismiss: (experienceID: string) => void;
   connected: () => void;
   disconnected: () => void;
+  atollActive: () => void;
+  atollIdle: () => void;
 }
 ```
 

@@ -820,6 +820,7 @@ async function main() {
   const client = new AtollClient({
     bundleIdentifier: BUNDLE_ID,
   });
+  let atollLifecycle: 'active' | 'idle' = 'idle';
 
   // Register events
   client.on('connected', () => console.log('✅ Connected to Atoll'));
@@ -828,9 +829,27 @@ async function main() {
   client.on('activityDismiss', (id: string) => console.log(`📌 Activity dismissed: ${id}`));
   client.on('widgetDismiss', (id: string) => console.log(`📌 Widget dismissed: ${id}`));
   client.on('notchExperienceDismiss', (id: string) => console.log(`📌 Notch dismissed: ${id}`));
+  client.on('atollActive', () => {
+    atollLifecycle = 'active';
+    console.log('Atoll lifecycle: active');
+  });
+  client.on('atollIdle', () => {
+    atollLifecycle = 'idle';
+    console.log('Atoll lifecycle: idle');
+  });
 
   console.log('\natoll-js Full API Demo');
   console.log('━'.repeat(40));
+
+  try {
+    await client.connect();
+    atollLifecycle = 'active';
+    console.log('Initial lifecycle state: active');
+  } catch {
+    atollLifecycle = 'idle';
+    console.log('Initial lifecycle state: idle');
+  }
+
   printMenu();
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -839,6 +858,13 @@ async function main() {
     rl.question('\n> ', async (input) => {
       const cmd = input.trim();
       try {
+        const lifecycleCommands = new Set(['1', '2', '3', 'h', 'help', 'q', 'quit']);
+        if (atollLifecycle === 'idle' && !lifecycleCommands.has(cmd)) {
+          console.log('Atoll is idle. Start Atoll and connect before running demo commands.');
+          prompt();
+          return;
+        }
+
         switch (cmd) {
           case '1':
             await client.connect();

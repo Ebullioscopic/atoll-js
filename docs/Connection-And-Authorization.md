@@ -47,7 +47,18 @@ client.on('connected', () => {
 client.on('disconnected', () => {
   console.log('Disconnected from Atoll');
 });
+
+client.on('atollActive', () => {
+  console.log('Atoll became active');
+});
+
+client.on('atollIdle', () => {
+  console.log('Atoll became idle');
+});
 ```
+
+`atollActive` and `atollIdle` are lifecycle-oriented aliases over connection
+state and can be used to switch your app between active and idle modes.
 
 ## Authorization
 

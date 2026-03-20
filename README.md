@@ -96,7 +96,12 @@ client.on('widgetDismiss', (widgetID: string) => { ... });
 client.on('notchExperienceDismiss', (experienceID: string) => { ... });
 client.on('connected', () => { ... });
 client.on('disconnected', () => { ... });
+client.on('atollActive', () => { ... });
+client.on('atollIdle', () => { ... });
 ```
+
+`atollActive`/`atollIdle` are lifecycle-oriented aliases that map to connection
+transitions and are useful for app-level active/idle mode handling.
 
 ### Builder Functions
 
