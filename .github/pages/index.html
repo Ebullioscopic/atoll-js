@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive showcase of atoll-js SDK: live activities, lock screen widgets, notch experiences, and flight animation.">
+  <title>atoll-js Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+  <div class="page-noise" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-content">
+      <div class="brand-lockup">
+        <p class="brand-kicker">ATOLL SDK SHOWCASE</p>
+        <h1 class="brand-title">atoll-js</h1>
+        <p class="brand-subtitle">Live Activities, Lock Screen Widgets, and Notch Experiences</p>
+      </div>
+
+      <div class="connection-panel">
+        <div class="status-indicator" id="statusIndicator" role="status" aria-live="polite">
+          <span class="status-dot"></span>
+          <span class="status-text">Disconnected</span>
+        </div>
+        <button class="btn btn-primary" id="authButton" disabled>Request Authorization</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="main-nav" aria-label="Section navigation">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#live-activities">Live Activities</a></li>
+        <li><a href="#lock-widgets">Lock Widgets</a></li>
+        <li><a href="#notch-experiences">Notch</a></li>
+        <li><a href="#event-log">Event Log</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section id="setup" class="section intro-section">
+      <div class="container">
+        <div class="intro-layout">
+          <article class="setup-card">
+            <h2>How to Run</h2>
+            <ol>
+              <li>Launch Atoll on macOS and enable RPC Server on port <code>9020</code>.</li>
+              <li>Keep this page open and wait for automatic connection.</li>
+              <li>Click Request Authorization.</li>
+              <li>Run any demo card below.</li>
+            </ol>
+          </article>
+          <article class="setup-card compact">
+            <h3>Notes</h3>
+            <ul>
+              <li>Lock screen widgets appear when your Mac is locked.</li>
+              <li>Flight animation demos are in Notch Experiences.</li>
+              <li>Use Event Log to inspect real-time Atoll events.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="live-activities" class="section">
+      <div class="container">
+        <h2>Live Activities</h2>
+        <p class="section-description">Dynamic status cards in the notch, including progress, timer, marquee, spectrum, and flight tracking.</p>
+        <div class="demo-grid" id="liveActivitiesGrid"></div>
+      </div>
+    </section>
+
+    <section id="lock-widgets" class="section">
+      <div class="container">
+        <h2>Lock Screen Widgets</h2>
+        <p class="section-description">Inline, card, circular, and custom web widgets rendered via the same descriptor APIs as the full demo.</p>
+        <div class="demo-grid" id="lockWidgetsGrid"></div>
+      </div>
+    </section>
+
+    <section id="notch-experiences" class="section">
+      <div class="container">
+        <h2>Notch Experiences</h2>
+        <p class="section-description">Tab and minimal modes, plus a Canvas flight animation that updates as progress changes.</p>
+        <div class="demo-grid" id="notchExperiencesGrid"></div>
+      </div>
+    </section>
+
+    <section id="event-log" class="section">
+      <div class="container">
+        <h2>Event Log</h2>
+        <p class="section-description">Connection, authorization, lifecycle, and dismissal events streamed from Atoll.</p>
+        <div class="event-log-panel">
+          <div class="event-log-header">
+            <h3>RPC Activity</h3>
+            <div class="event-log-controls">
+              <button class="btn btn-secondary" id="pauseLogButton">Pause</button>
+              <button class="btn btn-secondary" id="clearLogButton">Clear</button>
+            </div>
+          </div>
+          <div class="event-log-content" id="eventLogContent"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>
+        atoll-js showcase for GitHub Pages.
+        <a href="https://github.com/Ebullioscopic/atoll-js" target="_blank" rel="noreferrer">GitHub</a>
+        <span>•</span>
+        <a href="https://github.com/Ebullioscopic/Atoll" target="_blank" rel="noreferrer">Atoll App</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "atoll-js-showcase",
+  "version": "1.0.0",
+  "description": "Interactive showcase website for atoll-js SDK",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "dev:node": "npx http-server -p 8000",
+    "dev:php": "php -S localhost:8000"
+  },
+  "keywords": [
+    "atoll",
+    "atoll-js",
+    "macos",
+    "notch",
+    "live-activities",
+    "showcase",
+    "demo"
+  ],
+  "author": "Ebullioscopic",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,231 @@
+.demo-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 210px;
+  padding: 14px;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.demo-card:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04));
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+.demo-card-header {
+  display: grid;
+  gap: 6px;
+}
+
+.demo-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.demo-card-description {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.demo-card-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.progress-indicator {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.progress-bar {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  background: linear-gradient(90deg, #84b5ff, #4f8cff);
+  border-radius: 999px;
+  height: 100%;
+  transition: width 220ms ease;
+}
+
+.progress-text {
+  color: var(--text-secondary);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  min-width: 42px;
+  text-align: right;
+}
+
+.demo-card-footer {
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 9px;
+}
+
+.demo-card-code-toggle {
+  justify-content: flex-start;
+}
+
+.demo-card-code {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 260ms ease;
+}
+
+.demo-card-code.visible {
+  max-height: 620px;
+}
+
+.code-block {
+  background: #0a0a0a;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.code-header {
+  align-items: center;
+  background: #0f0f10;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+}
+
+.code-language {
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.code-copy-btn {
+  min-height: auto;
+  padding: 4px 10px;
+}
+
+.code-copy-btn.copied {
+  border-color: rgba(52, 199, 89, 0.5);
+  color: #81e9a2;
+}
+
+.code-content {
+  max-height: 400px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.code-content pre {
+  margin: 0;
+}
+
+.code-content code,
+.code-content pre,
+.code-content .token {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+}
+
+.btn {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  min-height: 34px;
+  padding: 7px 12px;
+  text-transform: uppercase;
+  transition: all 180ms ease;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.btn-primary {
+  background: #f4f4f5;
+  border-color: #f4f4f5;
+  color: #101014;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--line-strong);
+}
+
+.btn-danger {
+  background: rgba(255, 69, 58, 0.13);
+  border-color: rgba(255, 69, 58, 0.45);
+  color: #ff918a;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 69, 58, 0.2);
+}
+
+.btn-loading {
+  color: transparent !important;
+  pointer-events: none;
+  position: relative;
+}
+
+.btn-loading::after {
+  animation: spin 0.7s linear infinite;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  border-top-color: transparent;
+  content: '';
+  height: 13px;
+  left: 50%;
+  margin-left: -6.5px;
+  margin-top: -6.5px;
+  position: absolute;
+  top: 50%;
+  width: 13px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.demo-card .status-message {
+  font-size: 12px;
+  margin: 2px 0 0;
+  padding: 8px 10px;
+}
